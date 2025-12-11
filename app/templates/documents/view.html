@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - ЗЭДКД{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{ document.title }}</h2>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Document Content</h5>
+                {% if signature_valid %}
+                <span class="badge bg-success">Signature Valid</span>
+                {% else %}
+                <span class="badge bg-warning">Signature Not Verified</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if content %}
+                <div class="border p-3 bg-light">
+                    {{ content|replace('\n', '<br>')|safe }}
+                </div>
+                {% else %}
+                <div class="alert alert-warning">Content could not be decrypted.</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Document History</h5>
+            </div>
+            <div class="card-body">
+                {% if actions %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Date</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in actions|sort(attribute='created_at', reverse=true) %}
+                            <tr>
+                                <td>{{ action.user.username }}</td>
+                                <td>
+                                    <span class="badge bg-{% if action.action == 'approve' %}success{% elif action.action == 'reject' %}danger{% elif action.action == 'return' %}warning{% else %}primary{% endif %}">
+                                        {{ action.action|title }}
+                                    </span>
+                                </td>
+                                <td>{{ action.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ action.comment or '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No actions recorded for this document.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Document Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>ID:</strong></td>
+                        <td>{{ document.id }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Title:</strong></td>
+                        <td>{{ document.title }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type:</strong></td>
+                        <td>{{ document.doc_type.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Author:</strong></td>
+                        <td>{{ document.author.username }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status:</strong></td>
+                        <td>
+                            <span class="badge bg-{% if document.status == 'approved' %}success{% elif document.status == 'rejected' %}danger{% elif document.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                {{ document.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Created:</strong></td>
+                        <td>{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% if document.current_stage %}
+                    <tr>
+                        <td><strong>Current Stage:</strong></td>
+                        <td>{{ document.current_stage.name }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        {% if document.current_stage and (document.author_id == current_user.id or 
+           (document.current_stage.role_required and current_user.has_role(document.current_stage.role_required)) or 
+           (document.current_stage.user_id == current_user.id)) %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Document Action</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('documents.document_action', id=document.id) }}">
+                    <div class="mb-3">
+                        <label for="action" class="form-label">Select Action</label>
+                        <select class="form-control" id="action" name="action" required>
+                            {% if document.current_stage.can_approve %}
+                            <option value="approve">Approve</option>
+                            {% endif %}
+                            {% if document.current_stage.can_reject %}
+                            <option value="reject">Reject</option>
+                            {% endif %}
+                            {% if document.current_stage.can_return %}
+                            <option value="return">Return for Revision</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Comment (Optional)</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Perform Action</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

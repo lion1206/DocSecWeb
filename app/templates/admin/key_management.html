@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Key Management - ЗЭДКД{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Key Management</h2>
+        <p class="text-muted">Manage cryptographic keys for users</p>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Public Key Available</th>
+                                <th>Private Key Encrypted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'approver' %}warning{% else %}primary{% endif %}">
+                                        {{ user.role|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.public_key %}
+                                    <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.private_key_encrypted %}
+                                    <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('admin.reset_keys', user_id=user.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Reset Keys</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No users found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>About Key Management</h5>
+            </div>
+            <div class="card-body">
+                <p>In this system, each user has a pair of cryptographic keys:</p>
+                <ul>
+                    <li><strong>Public Key</strong>: Used for encrypting documents that the user should be able to read</li>
+                    <li><strong>Private Key</strong>: Used for decrypting documents and creating digital signatures. Stored encrypted with a system master key.</li>
+                </ul>
+                <p>Key reset will generate new key pairs for the user. This should be done if a user's private key is compromised.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
