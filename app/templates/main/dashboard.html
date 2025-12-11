@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ЗЭДКД{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Welcome to ЗЭДКД, {{ current_user.username }}!</h2>
+        <p class="text-muted">Secure Electronic Document Workflow System</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Documents</h5>
+                <h2>{{ total_docs }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Pending</h5>
+                <h2>{{ pending_docs }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Approved</h5>
+                <h2>{{ approved_docs }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Rejected</h5>
+                <h2>{{ rejected_docs }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Documents Created by You</h5>
+            </div>
+            <div class="card-body">
+                {% if created_docs %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in created_docs[:5] %}
+                            <tr>
+                                <td>{{ doc.title }}</td>
+                                <td>
+                                    <span class="badge bg-{% if doc.status == 'approved' %}success{% elif doc.status == 'rejected' %}danger{% elif doc.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                        {{ doc.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ doc.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('documents.view_document', id=doc.id) }}" class="btn btn-sm btn-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No documents created yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Documents Requiring Your Action</h5>
+            </div>
+            <div class="card-body">
+                {% if received_docs %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in received_docs[:5] %}
+                            <tr>
+                                <td>{{ doc.title }}</td>
+                                <td>{{ doc.author.username }}</td>
+                                <td>
+                                    <span class="badge bg-{% if doc.status == 'approved' %}success{% elif doc.status == 'rejected' %}danger{% elif doc.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                                        {{ doc.status|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('documents.view_document', id=doc.id) }}" class="btn btn-sm btn-primary">Action</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No documents requiring your action.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

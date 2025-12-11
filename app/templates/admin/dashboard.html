@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ЗЭДКД{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Admin Dashboard</h2>
+        <p class="text-muted">System administration panel</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Users</h5>
+                <h2>{{ total_users }}</h2>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-light btn-sm mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Documents</h5>
+                <h2>{{ total_docs }}</h2>
+                <a href="{{ url_for('documents.my_documents') }}" class="btn btn-light btn-sm mt-2">View</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Workflows</h5>
+                <h2>{{ total_workflows }}</h2>
+                <a href="{{ url_for('admin.workflows') }}" class="btn btn-light btn-sm mt-2">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">System Logs</h5>
+                <h2>Live</h2>
+                <a href="{{ url_for('admin.system_logs') }}" class="btn btn-light btn-sm mt-2">View</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent System Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Resource</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ log.user.username if log.user else 'System' }}</td>
+                                <td>{{ log.action }}</td>
+                                <td>{{ log.resource_type }} #{{ log.resource_id }}</td>
+                                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No recent activity.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-primary">Manage Users</a>
+                    <a href="{{ url_for('admin.workflows') }}" class="btn btn-primary">Manage Workflows</a>
+                    <a href="{{ url_for('admin.document_types') }}" class="btn btn-primary">Document Types</a>
+                    <a href="{{ url_for('admin.system_logs') }}" class="btn btn-primary">System Logs</a>
+                    <a href="{{ url_for('admin.key_management') }}" class="btn btn-primary">Key Management</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

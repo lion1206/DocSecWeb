@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Document Types - ЗЭДКД{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Document Types</h2>
+            <a href="{{ url_for('admin.create_document_type') }}" class="btn btn-primary">Create Type</a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                {% if document_types %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Workflow</th>
+                                <th>Documents</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc_type in document_types %}
+                            <tr>
+                                <td>{{ doc_type.id }}</td>
+                                <td>{{ doc_type.name }}</td>
+                                <td>{{ doc_type.description or '' }}</td>
+                                <td>{{ doc_type.workflow.name if doc_type.workflow else 'None' }}</td>
+                                <td>{{ doc_type.documents|length }}</td>
+                                <td>{{ doc_type.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.edit_document_type', id=doc_type.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form method="POST" action="{{ url_for('admin.delete_document_type', id=doc_type.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger delete-btn">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>No document types found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
